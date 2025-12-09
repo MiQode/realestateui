@@ -2,8 +2,14 @@ import Chat from '../../components/chat/Chat';
 import List from '../../components/list/List';
 import './profilePage.scss';
 import apiRequest from './../../lib/apiRequest';
-import { Await, Link, useLoaderData, useNavigate } from 'react-router-dom';
-import { Suspense, useContext } from 'react';
+import {
+  Await,
+  Link,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
+import { Suspense, useContext, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 
 function ProfilePage() {
@@ -11,6 +17,18 @@ function ProfilePage() {
   const data = useLoaderData();
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Handle opening chat from navigation state
+  useEffect(() => {
+    if (location.state?.openChatId) {
+      // Scroll to chat section
+      const chatSection = document.querySelector('.chatContainer');
+      if (chatSection) {
+        chatSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location.state]);
 
   const handleLogout = async () => {
     try {
@@ -21,6 +39,7 @@ function ProfilePage() {
       console.log(err);
     }
   };
+
   return (
     <div className="profilePage">
       <div className="details">
@@ -74,7 +93,14 @@ function ProfilePage() {
       </div>
       <div className="chatContainer">
         <div className="wrapper">
-          <Chat />
+          <Suspense fallback={<>Loading ...</>}>
+            <Await
+              resolve={data.chatResponse}
+              errorElement={<p>Error loading chats</p>}
+            >
+              {(chatResponse) => <Chat chats={chatResponse.data} />}
+            </Await>
+          </Suspense>
         </div>
       </div>
     </div>

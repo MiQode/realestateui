@@ -16,6 +16,7 @@ function Navbar() {
           <span>Cemo Real Estate</span>
         </a>
         <a href="/">Home</a>
+        <a href="/list">Listings</a>
         <a href="/">About</a>
         <a href="/">Contact</a>
         <a href="/">Agents</a>

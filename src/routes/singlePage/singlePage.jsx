@@ -26,6 +26,84 @@ function SinglePage() {
     }
   };
 
+  const handleSendMessage2 = async () => {
+    // Check if user is logged in
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    // Don't allow messaging yourself
+    // if (post.user.id === currentUser.id) {
+    //   alert("You can't message yourself!");
+    //   return;
+    // }
+
+    try {
+      // Create or get existing chat with this user
+      const res = await apiRequest.post('/chats', {
+        receiverId: post.userId,
+      });
+
+      // Navigate to profile page and scroll to chat section
+      navigate('/profile', {
+        state: {
+          openChatId: res.data.id,
+          receiver: post.user,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+      alert('Failed to start conversation');
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    // Check the actual property owner ID
+    const ownerId = post.userId || post.user?.id;
+
+    console.log('Current user:', currentUser.id);
+    console.log('Post owner:', ownerId);
+    console.log('Post data:', post); // Debug: see what's in post
+
+    if (!ownerId) {
+      alert('Cannot find post owner!');
+      return;
+    }
+
+    if (ownerId === currentUser.id) {
+      alert("You can't message yourself!");
+      return;
+    }
+
+    try {
+      const res = await apiRequest.post('/chats', {
+        receiverId: ownerId,
+      });
+
+      console.log('Chat created:', res.data);
+
+      navigate('/profile', {
+        state: {
+          openChatId: res.data.id,
+          receiver: post.user,
+        },
+      });
+    } catch (err) {
+      console.error('Error creating chat:', err);
+      console.error('Error response:', err.response?.data);
+      alert(
+        'Failed to start conversation: ' +
+          (err.response?.data?.message || err.message)
+      );
+    }
+  };
+
   return (
     <div className="singlePage">
       <div className="details">
@@ -133,7 +211,7 @@ function SinglePage() {
             <Map items={[post]} />
           </div>
           <div className="buttons">
-            <button>
+            <button onClick={handleSendMessage}>
               <img src="/chat.png" alt="" />
               Send a Message
             </button>
